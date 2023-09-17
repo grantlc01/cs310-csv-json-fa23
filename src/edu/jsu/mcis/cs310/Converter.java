@@ -2,6 +2,9 @@ package edu.jsu.mcis.cs310;
 
 import com.github.cliftonlabs.json_simple.*;
 import com.opencsv.*;
+import java.io.StringReader;
+import java.util.List;
+import java.util.Iterator;
 
 public class Converter {
     
@@ -78,8 +81,37 @@ public class Converter {
         
         try {
         
-            // INSERT YOUR CODE HERE
+            CSVReader reader = new CSVReader(new StringReader(csvString));
+            List<String[]> full = reader.readAll();
             
+            Iterator<String[]> iterator = full.iterator();
+            
+            JsonObject jsonObject = new JsonObject();
+            
+            JsonArray data = new JsonArray();
+            JsonArray prodNums = new JsonArray();
+            
+            String[] headings = iterator.next();
+            
+            while(iterator.hasNext()) {
+                String[] csvRecord = iterator.next();                
+                for(int i = 0; i < headings.length; ++i) {
+                    if(i == 0) {
+                        prodNums.add(csvRecord[i]);
+                    } else if(i == 2 || i == 3) {
+                        int num = Integer.parseInt(csvRecord[i]);
+                        data.add(num);
+                    } else {
+                        data.add(csvRecord[i]);
+                    }
+                }
+            }
+
+            jsonObject.put("ProdNums", prodNums);
+            jsonObject.put("ColHeadings", headings);
+            jsonObject.put("Data", data);
+            
+            result = Jsoner.serialize(jsonObject);
         }
         catch (Exception e) {
             e.printStackTrace();
