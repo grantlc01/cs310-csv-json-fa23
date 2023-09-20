@@ -5,6 +5,8 @@ import com.opencsv.*;
 import java.io.StringReader;
 import java.util.List;
 import java.util.Iterator;
+import java.io.StringWriter;
+import java.text.DecimalFormat;
 
 public class Converter {
     
@@ -95,7 +97,7 @@ public class Converter {
             
             while(iterator.hasNext()) {
                 String[] csvRecord = iterator.next();                
-                for(int i = 0; i < headings.length; ++i) {
+                for(int i = 0; i < csvRecord.length; ++i) {
                     if(i == 0) {
                         prodNums.add(csvRecord[i]);
                     } else if(i == 2 || i == 3) {
@@ -126,9 +128,52 @@ public class Converter {
         
         String result = ""; // default return value; replace later!
         
+        DecimalFormat decimalFormat = new DecimalFormat("00");
+        
         try {
             
             // INSERT YOUR CODE HERE
+            JsonObject jsonValues = Jsoner.deserialize(jsonString, new JsonObject());
+            
+            JsonArray prodNum = new JsonArray();
+            prodNum = (JsonArray)(jsonValues.get("ProdNums"));
+            
+            JsonArray headings = new JsonArray();
+            headings = (JsonArray)(jsonValues.get("ColHeadings"));
+            
+            JsonArray data = new JsonArray();
+            data = (JsonArray)(jsonValues.get("Data"));
+            
+            StringWriter stringWriter = new StringWriter();
+            CSVWriter csvWriter = new CSVWriter(stringWriter, ',', '"', '\\', "\n");
+            
+            String[] headingArray = new String[headings.size()];
+            
+            for(int i = 0; i < headings.size(); i++) {
+                headingArray[i] = headings.getString(i).toString();
+            }
+            
+            csvWriter.writeNext(headingArray);
+            
+            for(int i = 0; i < prodNum.size(); i++) {
+                String[] row = new String[headings.size()];
+                JsonArray insideData = ((JsonArray)data.get(i));
+                row[0] = prodNum.getString(i).toString();
+                
+                for(int j = 0; j < insideData.size(); j++) {
+                    if(j == headings.indexOf("Episode") - 1) {
+                        int num = Integer.parseInt(insideData.getString(j).toString());
+                        String formattedNum = "";
+                        formattedNum = decimalFormat.format(num);
+                        row[j + 1] = formattedNum;
+                    } else {
+                        row[j + 1] = insideData.get(j).toString();
+                    }
+                }
+                csvWriter.writeNext(row);
+            }
+            
+            result = stringWriter.toString();
             
         }
         catch (Exception e) {
