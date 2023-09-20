@@ -94,19 +94,21 @@ public class Converter {
             JsonArray prodNums = new JsonArray();
             
             String[] headings = iterator.next();
-            
+
             while(iterator.hasNext()) {
-                String[] csvRecord = iterator.next();                
+                String[] csvRecord = iterator.next();
+                JsonArray currentData = new JsonArray();
                 for(int i = 0; i < csvRecord.length; ++i) {
                     if(i == 0) {
                         prodNums.add(csvRecord[i]);
                     } else if(i == 2 || i == 3) {
                         int num = Integer.parseInt(csvRecord[i]);
-                        data.add(num);
+                        currentData.add(num);
                     } else {
-                        data.add(csvRecord[i]);
+                        currentData.add(csvRecord[i]);
                     }
                 }
+                data.add(currentData);
             }
 
             jsonObject.put("ProdNums", prodNums);
